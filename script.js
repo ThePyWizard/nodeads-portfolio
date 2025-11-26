@@ -17,6 +17,29 @@ let downPos = { x: 0, y: 0 };
 const clickThreshold = 6;
 
 const zoomValue = document.getElementById("zoomValue");
+/* -----------------------------------------------------------
+   SOUND EFFECTS
+----------------------------------------------------------- */
+const SFX = {
+    click: new Audio("sfx/click.wav"),
+    pop: new Audio("sfx/pop.mp3"),
+    throw: new Audio("sfx/throw.mp3"),
+    woosh: new Audio("sfx/whooshend.mp3"),
+    tap: new Audio("sfx/tap.mp3")
+};
+
+// Default volume tuning
+SFX.click.volume = 0.25;
+SFX.pop.volume = 0.35;
+SFX.throw.volume = 0.4;
+SFX.woosh.volume = 0.4;
+SFX.tap.volume = 0.2;
+
+// Utility: play safely
+function playSFX(audio) {
+    audio.currentTime = 0;
+    audio.play().catch(()=>{});
+}
 
 
 /* -----------------------------------------------------------
@@ -36,7 +59,7 @@ const FORCE = {
 ----------------------------------------------------------- */
 let NODES = [
   {
-    id: "Ad 1",
+    id: "#001",
     x: 0,
     y: 0,
     color: "#FF6B6B",
@@ -44,7 +67,7 @@ let NODES = [
     metrics: { ctr: 3.1, hookRate: 45, holdRate: 60 }
   },
   {
-    id: "Ad 2",
+    id: "#002",
     x: 0,
     y: 0,
     color: "#4ECDC4",
@@ -52,7 +75,7 @@ let NODES = [
     metrics: { ctr: 2.4, hookRate: 42, holdRate: 55 }
   },
   {
-    id: "Ad 3",
+    id: "#003",
     x: 0,
     y: 0,
     color: "#FFD93D",
@@ -60,7 +83,7 @@ let NODES = [
     metrics: { ctr: 4.0, hookRate: 50, holdRate: 65 }
   },
   {
-    id: "Ad 4",
+    id: "#004",
     x: 0,
     y: 0,
     color: "#6A4C93",
@@ -68,7 +91,7 @@ let NODES = [
     metrics: { ctr: 3.8, hookRate: 47, holdRate: 62 }
   },
   {
-    id: "Ad 5",
+    id: "#005",
     x: 0,
     y: 0,
     color: "#1A535C",
@@ -76,7 +99,7 @@ let NODES = [
     metrics: { ctr: 5.2, hookRate: 55, holdRate: 70 }
   },
   {
-    id: "Ad 6",
+    id: "#006",
     x: 0,
     y: 0,
     color: "#FF9F1C",
@@ -84,7 +107,7 @@ let NODES = [
     metrics: { ctr: 4.6, hookRate: 53, holdRate: 68 }
   },
   {
-    id: "Ad 7",
+    id: "#007",
     x: 0,
     y: 0,
     color: "#2EC4B6",
@@ -92,7 +115,7 @@ let NODES = [
     metrics: { ctr: 2.9, hookRate: 39, holdRate: 52 }
   },
   {
-    id: "Ad 8",
+    id: "#008",
     x: 0,
     y: 0,
     color: "#E71D36",
@@ -100,7 +123,7 @@ let NODES = [
     metrics: { ctr: 3.3, hookRate: 44, holdRate: 59 }
   },
   {
-    id: "Ad 9",
+    id: "#009",
     x: 0,
     y: 0,
     color: "#7FB800",
@@ -108,7 +131,7 @@ let NODES = [
     metrics: { ctr: 4.9, hookRate: 56, holdRate: 72 }
   },
   {
-    id: "Ad 10",
+    id: "#010",
     x: 0,
     y: 0,
     color: "#118AB2",
@@ -226,7 +249,7 @@ function sketchCircle(x, y, r, stroke, fill) {
 function drawNodes() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = "14px system-ui";
+  ctx.font = "20px Ananias";
 
   NODES.forEach(n => {
     const r = n.radius;
@@ -304,6 +327,10 @@ function updateNodes() {
       const minDist = A.radius + B.radius + FORCE.collidePadding;
 
       if (dist < minDist) {
+        // if (Math.random() < 0.02) {
+        //     playSFX(SFX.tap);
+        // }
+
         const overlap = (minDist - dist) * 0.5;
         dx /= dist;
         dy /= dist;
@@ -481,6 +508,10 @@ window.addEventListener("mousemove", e => {
 
 window.addEventListener("mouseup", e => {
   if (pointerDownNode) handleClick(e);
+  if (draggedNode) {
+    playSFX(SFX.throw);
+    }
+
 
   pointerDownNode = null;
   draggedNode = null;
@@ -497,6 +528,7 @@ function handleClick(e) {
   for (const n of NODES) {
     if (Math.hypot(world.x - n.x, world.y - n.y) <= n.radius) {
       selectedNode = n;
+      playSFX(SFX.click);
       openNode(n);
       return;
     }
@@ -514,6 +546,8 @@ const videoEl = document.getElementById("adVideo");
 const videoMeta = document.getElementById("videoMeta");
 
 function openNode(n) {
+  //playSFX(SFX.pop);
+
   selectedNode = n;
 
   infoPanel.innerHTML = `
@@ -531,6 +565,8 @@ function openNode(n) {
 }
 
 function closeOverlay() {
+  //playSFX(SFX.tap);
+
   videoOverlay.classList.add("hidden");
   videoEl.pause();
   videoEl.src = "";

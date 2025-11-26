@@ -6,14 +6,34 @@
     <title>Creative Portfolio Graph</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
+    <style>
+    @font-face {
+        font-family: 'Ananias';
+        src: url('fonts/Ananias.ttf') format('truetype');
+    }
+    </style>
+
 </head>
 
 <body>
     </div>
     <header class="topbar">
+    <div class="topbar-left">
         <div class="topbar-title">Creative Graph Portfolio</div>
         <div class="topbar-subtitle">Drag to pan · Scroll to zoom · Click a node to inspect</div>
+    </div>
+
+    <div class="topbar-right">
+        <a href="https://github.com/thepywizard" target="_blank" class="soc-btn">
+            <img src="icons/github-mark-white.png" alt="GitHub">
+        </a>
+
+        <a href="https://www.linkedin.com/in/jishnumm" target="_blank" class="soc-btn">
+            <img src="icons/linkedin.png" alt="LinkedIn">
+        </a>
+    </div>
     </header>
+
 
     <main class="main-layout">
         <section class="canvas-wrapper">
@@ -32,7 +52,7 @@
         <div id="zoomValue">100%</div>
         <button id="zoomIn">+</button>
     </div>
-
+    
     </div>
 
     <!-- Video overlay -->
