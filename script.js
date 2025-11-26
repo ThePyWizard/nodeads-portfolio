@@ -2,58 +2,61 @@
 // GLOBAL CONSTANTS
 // -------------------------------------------------------------
 
-// Boundary rectangle inside which nodes are allowed to move
-const WORLD = {
-    left: -600,
-    right: 600,
-    top: -400,
-    bottom: 400
-};
+let scale = 0.3;   // start fully zoomed out
+let offsetX = 0;
+let offsetY = 0;
 
-// Zoom UI
+let isPanning = false;
+let lastX = 0, lastY = 0;
+let vx = 0, vy = 0;
+let isInertia = false;
+
+let draggedNode = null;
+let pointerDownNode = null;
+let selectedNode = null;
+let downPos = { x: 0, y: 0 };
+const clickThreshold = 6;
+
 const zoomValue = document.getElementById("zoomValue");
 
 
 
 // -------------------------------------------------------------
-// NODES
+// NODES DATA
 // -------------------------------------------------------------
 
 const NODES = [
     {
         id: "TravelAnimator – Beach Reel",
-        x: -200, y: -100,
+        x: 0, y: 0,
         color: "#ffb454",
         videoUrl: "videos/work1.mp4",
         metrics: { ctr: 3.2, hookRate: 46, holdRate: 61 }
     },
     {
         id: "Christmas Offer – UGC",
-        x: 80, y: -40,
+        x: 0, y: 0,
         color: "#7fd1b9",
         videoUrl: "videos/work2.mp4",
         metrics: { ctr: 4.7, hookRate: 53, holdRate: 72 }
     },
     {
         id: "Map Story – Johnny Harris Style",
-        x: 260, y: 160,
+        x: 0, y: 0,
         color: "#b9a7ff",
         videoUrl: "videos/work3.mp4",
         metrics: { ctr: 2.9, hookRate: 39, holdRate: 58 }
     },
     {
         id: "Black Friday Performers",
-        x: -60, y: 200,
+        x: 0, y: 0,
         color: "#ff6f91",
         videoUrl: "videos/work4.mp4",
         metrics: { ctr: 5.1, hookRate: 57, holdRate: 70 }
     }
 ];
 
-// Add drift + physics velocity
 NODES.forEach(n => {
-    n.dx = (Math.random() * 0.005) - 0.0025;
-    n.dy = (Math.random() * 0.005) - 0.0025;
     n.vx = 0;
     n.vy = 0;
 });
@@ -69,50 +72,6 @@ const ctx = canvas.getContext("2d");
 
 let canvasWidth = 0;
 let canvasHeight = 0;
-
-let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
-
-let isPanning = false;
-let lastX = 0;
-let lastY = 0;
-
-let vx = 0, vy = 0;
-let isInertia = false;
-
-let draggedNode = null;
-let pointerDownNode = null;
-let downPos = { x: 0, y: 0 };
-let selectedNode = null;   // <— track highlighted node
-
-const clickThreshold = 6;
-
-
-
-// -------------------------------------------------------------
-// UTILS
-// -------------------------------------------------------------
-
-function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
-function screenToWorld(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    return {
-        x: (clientX - rect.left - offsetX) / scale,
-        y: (clientY - rect.top - offsetY) / scale
-    };
-}
-
-function updateZoomValue() {
-    zoomValue.textContent = `${Math.round(scale * 100)}%`;
-}
-
-
-
-// -------------------------------------------------------------
-// CANVAS RESIZING & CAMERA
-// -------------------------------------------------------------
 
 function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
@@ -134,65 +93,66 @@ window.addEventListener("resize", () => {
 
 resizeCanvas();
 
-function centerCamera() {
-    let cx = 0, cy = 0;
-    NODES.forEach(n => { cx += n.x; cy += n.y; });
-    cx /= NODES.length;
-    cy /= NODES.length;
 
-    offsetX = canvasWidth / 2 - cx * scale;
-    offsetY = canvasHeight / 2 - cy * scale;
+
+// -------------------------------------------------------------
+// UTILS
+// -------------------------------------------------------------
+
+function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
+
+function screenToWorld(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (clientX - rect.left - offsetX) / scale,
+        y: (clientY - rect.top - offsetY) / scale
+    };
+}
+
+function updateZoomValue() {
+    zoomValue.textContent = `${Math.round(scale * 100)}%`;
+}
+
+
+
+// -------------------------------------------------------------
+// CIRCULAR ARRANGEMENT (INITIAL)
+// -------------------------------------------------------------
+
+function arrangeNodesInCircle() {
+    const count = NODES.length;
+    const radius = 350;
+
+    NODES.forEach((n, i) => {
+        const angle = (i / count) * Math.PI * 2;
+        n.x = Math.cos(angle) * radius;
+        n.y = Math.sin(angle) * radius;
+    });
+}
+
+arrangeNodesInCircle();
+
+
+
+// -------------------------------------------------------------
+// CAMERA CENTER
+// -------------------------------------------------------------
+
+function centerCamera() {
+    offsetX = canvasWidth / 2;
+    offsetY = canvasHeight / 2;
 }
 
 centerCamera();
+updateZoomValue();
 
 
 
 // -------------------------------------------------------------
-// DRAWING METHODS
+// DRAWING
 // -------------------------------------------------------------
-
-function drawBoundary() {
-    ctx.save();
-    ctx.strokeStyle = "#555";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([10, 6]);
-
-    ctx.strokeRect(
-        WORLD.left,
-        WORLD.top,
-        WORLD.right - WORLD.left,
-        WORLD.bottom - WORLD.top
-    );
-
-    ctx.restore();
-}
-
-function drawGrid() {
-    const grid = 40;
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
-    ctx.lineWidth = 1;
-
-    const startX = -((offsetX / scale + 2000) | 0);
-    const endX = startX + canvasWidth / scale + 4000;
-    const startY = -((offsetY / scale + 2000) | 0);
-    const endY = startY + canvasHeight / scale + 4000;
-
-    for (let x = startX; x < endX; x += grid) {
-        ctx.beginPath();
-        ctx.moveTo(x, startY);
-        ctx.lineTo(x, endY);
-        ctx.stroke();
-    }
-    for (let y = startY; y < endY; y += grid) {
-        ctx.beginPath();
-        ctx.moveTo(startX, y);
-        ctx.lineTo(endX, y);
-        ctx.stroke();
-    }
-    ctx.restore();
-}
 
 function sketchCircle(x, y, r, stroke, fill) {
     ctx.fillStyle = fill;
@@ -206,47 +166,73 @@ function sketchCircle(x, y, r, stroke, fill) {
     const jitter = 0.7;
     for (let i = 0; i < 2; i++) {
         ctx.beginPath();
-        const off = i === 0 ? jitter : -jitter;
+        const off = i ? -jitter : jitter;
         ctx.arc(x + off, y + off, r, 0, Math.PI * 2);
         ctx.stroke();
     }
 }
 
 function drawNodes() {
-    ctx.font = "14px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    ctx.font = "14px system-ui";
 
     NODES.forEach(node => {
         const r = 40 + node.metrics.ctr * 7;
         node.radius = r;
 
         sketchCircle(node.x, node.y, r, "#00000099", node.color);
-        // highlight if selected
+
+        // glow highlight
         if (selectedNode === node) {
             ctx.save();
             ctx.strokeStyle = "rgba(255,255,255,0.9)";
-            ctx.lineWidth = 6;
             ctx.shadowColor = node.color;
             ctx.shadowBlur = 22;
+            ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.arc(node.x, node.y, r + 6, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
         }
 
-
-        let label = node.id.length > 28 ? node.id.slice(0, 25) + "…" : node.id;
+        const label =
+            node.id.length > 28 ? node.id.slice(0, 25) + "…" : node.id;
         ctx.fillStyle = "#111";
         ctx.fillText(label, node.x, node.y);
     });
 }
 
 
+// -------------------------------------------------------------
+// PHYSICS — REPULSION + RADIAL SPRING + COLLISIONS
+// -------------------------------------------------------------
 
-// -------------------------------------------------------------
-// PHYSICS
-// -------------------------------------------------------------
+function applyRepulsion() {
+    const repulsionStrength = 30000;
+
+    for (let i = 0; i < NODES.length; i++) {
+        for (let j = i + 1; j < NODES.length; j++) {
+            const A = NODES[i], B = NODES[j];
+
+            const dx = B.x - A.x;
+            const dy = B.y - A.y;
+            let dist = Math.hypot(dx, dy);
+            if (dist < 1) dist = 1;
+
+            const force = repulsionStrength / (dist * dist);
+
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            A.vx -= nx * force;
+            A.vy -= ny * force;
+
+            B.vx += nx * force;
+            B.vy += ny * force;
+        }
+    }
+}
 
 function physicsCollisions() {
     const e = 0.4;
@@ -264,22 +250,18 @@ function physicsCollisions() {
                 const nx = dx / dist;
                 const ny = dy / dist;
 
-                // Correct overlap
                 const overlap = (minDist - dist) * 0.5;
                 A.x -= nx * overlap;
                 A.y -= ny * overlap;
                 B.x += nx * overlap;
                 B.y += ny * overlap;
 
-                // Relative velocity
                 const rvx = B.vx - A.vx;
                 const rvy = B.vy - A.vy;
-
                 const velAlong = rvx * nx + rvy * ny;
                 if (velAlong > 0) continue;
 
                 const jImpulse = -(1 + e) * velAlong;
-
                 A.vx -= jImpulse * nx;
                 A.vy -= jImpulse * ny;
                 B.vx += jImpulse * nx;
@@ -290,40 +272,27 @@ function physicsCollisions() {
 }
 
 function updateNodes() {
-    const friction = 0.96;
+    applyRepulsion(); // evenly spaced
 
     NODES.forEach(n => {
-        // drift if not dragging
-        if (n !== draggedNode) {
-            n.x += n.dx;
-            n.y += n.dy;
-        }
+        // radial spring (pull toward circle)
+        const targetRadius = 350;
+        const distFromCenter = Math.hypot(n.x, n.y) || 1;
+        const dirX = n.x / distFromCenter;
+        const dirY = n.y / distFromCenter;
+
+        const springStrength = 0.02;
+        const radialForce = (targetRadius - distFromCenter) * springStrength;
+
+        n.vx += dirX * radialForce;
+        n.vy += dirY * radialForce;
 
         // apply velocity
         n.x += n.vx;
         n.y += n.vy;
 
-        // friction
-        n.vx *= friction;
-        n.vy *= friction;
-
-        // boundary clamp
-        if (n.x - n.radius < WORLD.left) {
-            n.x = WORLD.left + n.radius;
-            n.vx *= -0.4;
-        }
-        if (n.x + n.radius > WORLD.right) {
-            n.x = WORLD.right - n.radius;
-            n.vx *= -0.4;
-        }
-        if (n.y - n.radius < WORLD.top) {
-            n.y = WORLD.top + n.radius;
-            n.vy *= -0.4;
-        }
-        if (n.y + n.radius > WORLD.bottom) {
-            n.y = WORLD.bottom - n.radius;
-            n.vy *= -0.4;
-        }
+        n.vx *= 0.94;
+        n.vy *= 0.94;
     });
 
     physicsCollisions();
@@ -344,8 +313,6 @@ function render() {
     ctx.translate(offsetX, offsetY);
     ctx.scale(scale, scale);
 
-    drawBoundary();
-    drawGrid();
     drawNodes();
 
     ctx.restore();
@@ -390,19 +357,16 @@ canvas.addEventListener("wheel", e => {
     scale = clamp(scale, 0.3, 3);
 
     const after = screenToWorld(e.clientX, e.clientY);
-
     offsetX += (mouse.x - after.x) * scale;
     offsetY += (mouse.y - after.y) * scale;
 
     updateZoomValue();
 });
 
-updateZoomValue();
-
 
 
 // -------------------------------------------------------------
-// DRAGGING / THROWING / PANNING
+// DRAGGING + THROWING + PANNING
 // -------------------------------------------------------------
 
 canvas.addEventListener("mousedown", e => {
@@ -421,7 +385,7 @@ canvas.addEventListener("mousedown", e => {
         }
     }
 
-    // else begin canvas panning
+    // start panning
     isPanning = true;
     const rect = canvas.getBoundingClientRect();
     lastX = e.clientX - rect.left;
@@ -435,7 +399,6 @@ canvas.addEventListener("mousedown", e => {
 window.addEventListener("mousemove", e => {
     const moved = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
 
-    // Start dragging node
     if (pointerDownNode && moved > clickThreshold) {
         draggedNode = pointerDownNode;
         pointerDownNode = null;
@@ -449,12 +412,8 @@ window.addEventListener("mousemove", e => {
         draggedNode.x = world.x;
         draggedNode.y = world.y;
 
-        // Throw velocity
-        const tvx = draggedNode.x - prevX;
-        const tvy = draggedNode.y - prevY;
-
-        draggedNode.vx = clamp(tvx, -3, 3);
-        draggedNode.vy = clamp(tvy, -3, 3);
+        draggedNode.vx = clamp(draggedNode.x - prevX, -3, 3);
+        draggedNode.vy = clamp(draggedNode.y - prevY, -3, 3);
 
         physicsCollisions();
         return;
@@ -480,6 +439,7 @@ window.addEventListener("mousemove", e => {
     }
 });
 
+
 window.addEventListener("mouseup", e => {
     if (pointerDownNode) handleClick(e);
 
@@ -488,42 +448,13 @@ window.addEventListener("mouseup", e => {
 
     if (isPanning) {
         isPanning = false;
-        startInertia();
     }
 });
 
 
-function startInertia() {
-    if (Math.hypot(vx, vy) < 0.1) return;
-
-    isInertia = true;
-    const friction = 0.9;
-
-    function step() {
-        if (!isInertia) return;
-
-        offsetX += vx;
-        offsetY += vy;
-
-        vx *= friction;
-        vy *= friction;
-
-        render();
-
-        if (Math.hypot(vx, vy) < 0.1) {
-            isInertia = false;
-            return;
-        }
-        requestAnimationFrame(step);
-    }
-
-    requestAnimationFrame(step);
-}
-
-
 
 // -------------------------------------------------------------
-// NODE CLICK → SHOW VIDEO + METRICS
+// CLICK HANDLER
 // -------------------------------------------------------------
 
 function handleClick(e) {
@@ -531,6 +462,7 @@ function handleClick(e) {
 
     for (const node of NODES) {
         if (Math.hypot(world.x - node.x, world.y - node.y) <= node.radius) {
+            selectedNode = node;
             openNode(node);
             return;
         }
@@ -540,7 +472,7 @@ function handleClick(e) {
 
 
 // -------------------------------------------------------------
-// UI — VIDEO MODAL
+// VIDEO PANEL UI
 // -------------------------------------------------------------
 
 const infoPanel = document.getElementById("infoPanel");
@@ -551,6 +483,7 @@ const videoMeta = document.getElementById("videoMeta");
 
 function openNode(node) {
     selectedNode = node;
+
     infoPanel.innerHTML = `
         <h3>${node.id}</h3>
         <div class="info-metrics">
@@ -567,7 +500,7 @@ function openNode(node) {
     videoMeta.textContent = node.id;
 
     videoOverlay.classList.remove("hidden");
-    videoEl.play().catch(() => { });
+    videoEl.play().catch(() => {});
 }
 
 function closeOverlay() {
