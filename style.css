@@ -121,20 +121,20 @@ body {
 }
 
 .video-dialog {
-    position: relative;
-    background: #111;
-    border-radius: 10px;
-    padding: 12px 12px 8px 12px;
-    width: min(720px, 92vw);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    border: 1px solid #333;
+    width: min(720px, 90vw);
+    height: auto;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
+
 #adVideo {
-    width: 100%;
-    border-radius: 8px;
-    background: #000;
+    max-height: 70vh;
+    object-fit: contain;
 }
+
 
 .video-meta {
     margin-top: 6px;

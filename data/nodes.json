@@ -1,0 +1,82 @@
+[
+  {
+    "id": "Ad 1",
+    "x": 0,
+    "y": 0,
+    "color": "#FF6B6B",
+    "videoUrl": "videos/ad1.mp4",
+    "metrics": { "ctr": 3.1, "hookRate": 45, "holdRate": 60 }
+  },
+  {
+    "id": "Ad 2",
+    "x": 0,
+    "y": 0,
+    "color": "#4ECDC4",
+    "videoUrl": "videos/ad2.mp4",
+    "metrics": { "ctr": 2.4, "hookRate": 42, "holdRate": 55 }
+  },
+  {
+    "id": "Ad 3",
+    "x": 0,
+    "y": 0,
+    "color": "#FFD93D",
+    "videoUrl": "videos/ad3.mp4",
+    "metrics": { "ctr": 4.0, "hookRate": 50, "holdRate": 65 }
+  },
+  {
+    "id": "Ad 4",
+    "x": 0,
+    "y": 0,
+    "color": "#6A4C93",
+    "videoUrl": "videos/ad4.mp4",
+    "metrics": { "ctr": 3.8, "hookRate": 47, "holdRate": 62 }
+  },
+  {
+    "id": "Ad 5",
+    "x": 0,
+    "y": 0,
+    "color": "#1A535C",
+    "videoUrl": "videos/ad5.mp4",
+    "metrics": { "ctr": 5.2, "hookRate": 55, "holdRate": 70 }
+  },
+  {
+    "id": "Ad 6",
+    "x": 0,
+    "y": 0,
+    "color": "#FF9F1C",
+    "videoUrl": "videos/ad6.mp4",
+    "metrics": { "ctr": 4.6, "hookRate": 53, "holdRate": 68 }
+  },
+  {
+    "id": "Ad 7",
+    "x": 0,
+    "y": 0,
+    "color": "#2EC4B6",
+    "videoUrl": "videos/ad7.mp4",
+    "metrics": { "ctr": 2.9, "hookRate": 39, "holdRate": 52 }
+  },
+  {
+    "id": "Ad 8",
+    "x": 0,
+    "y": 0,
+    "color": "#E71D36",
+    "videoUrl": "videos/ad8.mp4",
+    "metrics": { "ctr": 3.3, "hookRate": 44, "holdRate": 59 }
+  },
+  {
+    "id": "Ad 9",
+    "x": 0,
+    "y": 0,
+    "color": "#7FB800",
+    "videoUrl": "videos/ad9.mp4",
+    "metrics": { "ctr": 4.9, "hookRate": 56, "holdRate": 72 }
+  },
+  {
+    "id": "Ad 10",
+    "x": 0,
+    "y": 0,
+    "color": "#118AB2",
+    "videoUrl": "videos/ad10.mp4",
+    "metrics": { "ctr": 3.7, "hookRate": 48, "holdRate": 63 }
+  }
+]
