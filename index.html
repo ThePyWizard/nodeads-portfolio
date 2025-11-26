@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Creative Portfolio Graph</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    </div>
+    <header class="topbar">
+        <div class="topbar-title">Creative Graph Portfolio</div>
+        <div class="topbar-subtitle">Drag to pan · Scroll to zoom · Click a node to inspect</div>
+    </header>
+
+    <main class="main-layout">
+        <section class="canvas-wrapper">
+            <canvas id="board"></canvas>
+        </section>
+
+        <aside class="sidebar">
+            <h2>Ad Details</h2>
+            <div id="infoPanel" class="info-panel">
+                <p>Click a node to see its metrics.</p>
+            </div>
+        </aside>
+    </main>
+    <div id="zoomControls" class="zoom-controls">
+        <button id="zoomOut">−</button>
+        <div id="zoomValue">100%</div>
+        <button id="zoomIn">+</button>
+    </div>
+
+    </div>
+
+    <!-- Video overlay -->
+    <div id="videoOverlay" class="video-overlay hidden">
+        <div class="video-dialog">
+            <button id="closeVideo" class="close-btn">×</button>
+            <video id="adVideo" controls></video>
+            <div id="videoMeta" class="video-meta"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
